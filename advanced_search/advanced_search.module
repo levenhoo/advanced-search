@@ -1,0 +1,85 @@
+<?php
+/* 代码的TAB缩进必须为2 */
+/**
+ *  author:Leven
+ *  create date:2014.4.23
+ */
+
+/**
+ * @file advanced_search.moudle
+ *
+ */
+
+
+/*
+ *  Implements hook_menu().
+ * */
+function advanced_search_menu(){
+
+	$items['advanced_search'] = array(
+		'title' => 'Advanced Search Form',
+		'page callback' => '_welcome_form',
+		'access callback' => TRUE,
+		'weight' => -10,
+		'file' => 'advanced_search.page.inc',
+	);
+
+	$items['admin/config/search/advanced_search_setting/'] = array(
+		'title' => 'Advanced search setting',
+		'page callback' => '_welcome_form',
+		'access callback' => TRUE,
+		'description' => 'Global configuration of advanced search.',
+		'weight' => -10,
+		'file' => 'advanced_search.admin.inc',
+		'type' => MENU_NORMAL_ITEM,
+	);
+
+	//get all content type
+	$all_contentTypes = node_type_get_types();
+	foreach($all_contentTypes as $content_type){
+	/* *.admin.inc应该仅用于后台部分，前台应该使用如.page.inc, .form.page.inc的命名 */
+		$items['advanced_search/'.$content_type->type] = array(
+			'title' =>  $content_type->name,
+			'type' =>  MENU_LOCAL_TASK,
+			'page callback' => 'drupal_get_form',
+			/* 函数命名应该带前缀，这种命名冲突率很高 */
+			'page arguments' => array('_advanced_search_customer_search_form',1),
+			'access callback' => TRUE,
+			'file' => 'advanced_search.page.inc',
+		);
+
+	/*
+	*  advanced search admin config setting
+	* */
+		$items['admin/config/search/advanced_search_setting/'.$content_type->type] = array(
+			'title' =>  $content_type->name,
+			'page callback' => 'drupal_get_form',
+			'page arguments' => array('_advanced_search_form_setting_form',4),
+			'access callback' => TRUE,
+			'type' =>  MENU_LOCAL_TASK,
+			'file' => 'advanced_search.admin.inc',
+			);
+		}
+	return $items;
+}
+
+/**
+* Implements hook_theme()
+*/
+function advanced_search_theme($existing, $type, $theme, $path){
+	return array(
+		// theme name与form ID一样。这是由于每个form[#theme]都有一个等于form ID的默认值。
+		'_advanced_search_customer_search_form' => array(
+		'render element' => 'form',
+		'template' => 'advanced_search_handle', // xxx.tpl.php
+		),
+	);
+}
+
+/**
+* Implements hook_uninstall()
+*/
+function advanced_search_uninstall(){
+//删除variable
+//advanced_search%
+}
